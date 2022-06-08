@@ -1,35 +1,39 @@
-
-#include <SoftwareSerial.h> 
-#include <TinyGPS.h> 
-float lat = 0,lon = 0; // create variable for latitude and longitude object  
-SoftwareSerial gpsSerial(3,4);//rx,tx 
-
-TinyGPS gps; // create gps object 
-void setup(){ 
-Serial.begin(9600); // connect serial 
-//Serial.println("The GPS Received Signal:"); 
-gpsSerial.begin(9600); // connect gps sensor 
-
-} 
-void loop(){ 
-  while(gpsSerial.available()){ // check for gps data 
-  if(gps.encode(gpsSerial.read()))// encode gps data 
-  {  
-  gps.f_get_position(&lat,&lon); // get latitude and longitude 
-  // display position 
-  Serial.print("Position: "); 
-  Serial.print("Latitude:"); 
-  Serial.print(lat,6); 
-  Serial.print(";"); 
-  Serial.print("Longitude:"); 
-  Serial.println(lon,6);  
-  Serial.print(lat); 
-  Serial.print(" "); 
-
- } 
-} 
-String latitude = String(lat,6); 
-  String longitude = String(lon,6); 
-Serial.println(latitude+";"+longitude); 
-delay(1000); 
-} 
+#include <SoftwareSerial.h>
+#include<TinyGPS.h>
+TinyGPS tGPS;
+SoftwareSerial SerialGPS(4, 3);
+unsigned long chars;
+unsigned short sentences, failed_checksum;
+void setup()
+{
+  Serial.begin(9600);
+  Serial.println("Little buoy");
+  Serial.println("v2. Utilizando tinyGPS");
+  Serial.print("Testing TinyGPS library v. ");
+  Serial.println(TinyGPS::library_version());
+  SerialGPS.begin(9600);
+}
+0d
+void loop()
+{
+  while (SerialGPS.available())
+  {
+    int c = SerialGPS.read();
+    if (tGPS.encode(c))
+    {
+      // process new gps info here
+      float flat, flon;
+      unsigned long fix_age;
+      tGPS.f_get_position(&flat, &flon);
+      float falt = tGPS.f_altitude(); // +/- altitude in meters
+      Serial.print("Coordenadas (DD): ");
+      Serial.print(flat, 5);
+      Serial.print(", ");
+      Serial.print(flon, 5);
+      Serial.print(" ALT:");
+      Serial.print(falt, 5);
+      Serial.print(" SAT:");
+      Serial.println(tGPS.satellites());
+    }
+  }
+}
